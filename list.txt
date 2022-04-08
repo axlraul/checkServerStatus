@@ -1,0 +1,17 @@
+ALL|Desconocido|$TS
+GSTMQ|JAVA|$Aplicativo
+EIDES|JAVA|$Aplicativo
+ALL|qradar|$AgenteBasico
+ALL|kauditd|$AgenteBasico
+ALL|qualys-cloud-agent|$AgenteBasico
+ALL|qualys-scan-util|$AgenteBasico
+ALL|k08agent|$AgenteBasico
+ALL|klzagent|$AgenteBasico
+ALL|k11agent|$AgenteBasico
+ALL|dsmc|$Backup
+ALL|systemd|$Aplicativo|##Prueba
+GSTMQ|httpd|$Aplicativo
+ALL|BESClient|$AgenteBasico
+ALL|gc-launcher|$TS  ##Guardicore
+GSTMQ|amqrmppa|$Aplicativo
+EIDES|mysqld|$Aplicativo
