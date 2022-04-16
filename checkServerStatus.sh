@@ -23,21 +23,20 @@ case $opcion in
 
 	CPU)
 echo -e "\n-------Top 3 procesos que consumen CPU"
-ps -eo %cpu,pid,ppid,cmd --sort=-%cpu | head -n 4
+ps -eo %cpu,pid,ppid,cmd --sort=-%cpu | head -n 3
 Top1Pid=$(ps -eo pid --sort=-%cpu --no-headers | head -n 1)
 	;;
 
 	RAM)
 if [[ $OSVersion == 7 ]]
 then
-  MEMORIA=$(echo "-%mem")
-elif [[ $OSVersion == 6 ]]
-then
-  MEMORIA=$(echo "-rss")
+  MEMORIA=$(echo "-%mem")	#RH7/CENTOS7
+else
+  MEMORIA=$(echo "-rss")	#RH6/CENTOS6
 fi
 
 echo -e "\n\n-------Top 3 procesos que consumen RAM"
-ps -eo %mem,pid,ppid,cmd --sort=$MEMORIA --no-headers | head -n 4
+ps -eo %mem,pid,ppid,cmd --sort=$MEMORIA --no-headers | head -n 3
 Top1Pid=$(ps -eo pid --sort=$MEMORIA --no-headers | head -n 1)
 	;;
 
