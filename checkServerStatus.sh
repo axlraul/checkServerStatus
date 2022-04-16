@@ -4,30 +4,47 @@ THRESHOLD_PERCENT=10            #Umbral de alertas de FS
 
 host=`hostname -f`
 echo "$host"
-
+skipReport=0
 #/proc/meminfo
 clear
 
+echo -e "Introduce la opcion que deseas consultar:\n" 
+echo "CPU"
+echo "RAM"
+echo "SWAP"
+echo "FS"
+
+echo -e "\n"
+
+read opcion
+case $opcion in
+
+	CPU)
 echo -e "\n-------Top 3 procesos que consumen CPU"
 ps -eo %cpu,ppid,cmd --sort=-%cpu | head -n 4
+Top1Pid=$(ps -eo pid --sort=-%cpu --no-headers | head -n 1)
+	;;
 
-
-
+	RAM)
 echo -e "\n\n-------Top 3 procesos que consumen RAM"
-
-#for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file; done | sort -k 2 -r | egrep -i "kB|MB|GB" | head -n 5
-
-
 ps -eo %mem,pid,ppid,cmd --sort=-%mem | head -n 4
+Top1Pid=$(ps -eo pid --sort=-%mem --no-headers | head -n 1)
+	;;
 
-
-
-
+	SWAP)
 echo -e "\n\n-------Top 3 procesos que consumen SWAP"
+echo -e "PID - CMD - SWAP"
+for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ print ""}' $file; done | sort -k 2 -r | egrep -i "kB|MB|GB" | head -n 3  | awk '{print $2" - "$5" "$6" - "$1}'
 
-echo -e "CMD - SWAP"
-for file in /proc/*/status ; do awk '/VmSwap|Name/{printf $2 " " $3}END{ print ""}' $file; done | sort -k 2 -r | egrep -i "kB|MB|GB" | head -n 3
+Top1Pid=$(for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ print ""}' $file; done | sort -k 2 -r | head -n 1  | awk '{print $2}')
+#echo $Top1Pid
+#nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
+#echo $nombreProceso
+#nombreProcesoLargo=$(ps -p $Top1Pid -o cmd --no-headers)
+#echo $nombreProcesoLargo
+	;;
 
+	FS)
 echo -e "\n\n-------Listado de FS en alerta"
 
 #set -e
@@ -52,7 +69,36 @@ do
       fi
     fi
   fi
+skipReport=1
 done
+	;;
+	*)
+	echo -e "Opcion no correcta, vuelve a intentarlo\n\n"
+        skipReport=1
+	;;
+esac
 
 
+if [[ $skipReport == 0 ]]
+then
+  
+  #echo $Top1Pid
+  nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
+  #echo $nombreProceso
+  nombreProcesoLargo=$(ps -p $Top1Pid -o cmd --no-headers)
+  #echo $nombreProcesoLargo
+  source ./escalation.txt
+
+  while read line; 
+  do 
+   # echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso
+
+    if [[ ! -z $(echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso) ]]
+    then
+      echo -e "\nLa alerta de $opcion detectada debe escalarse de la siguiente manera:\n"
+      eval echo $(echo $line | awk -F'|' '{print $3}')
+      echo -e "\n"
+    fi
+  done < list.txt
+fi
 
