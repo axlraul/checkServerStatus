@@ -1,11 +1,9 @@
 #!/bin/bash   
 
-THRESHOLD_PERCENT=10            #Umbral de alertas de FS
+THRESHOLD_PERCENT=10            # Umbral de alertas de FS
 
-host=`hostname -f`
-echo "$host"
-skipReport=0
-#/proc/meminfo
+skipReport=0			# Controla si debe printar el reporte de escalado de CPU/RAM/SWAP
+msg=0 				# Variable que controla si se ha printado mensaje por pantalla con instrucciones
 clear
 
 echo -e "Introduce la opcion que deseas consultar:\n" 
@@ -14,14 +12,14 @@ echo "RAM"
 echo "SWAP"
 echo "FS"
 
-echo -e "\n"
+echo -e "\nOpcion:"
 
 read opcion
 case $opcion in
 
 	CPU)
 echo -e "\n-------Top 3 procesos que consumen CPU"
-ps -eo %cpu,ppid,cmd --sort=-%cpu | head -n 4
+ps -eo %cpu,pid,ppid,cmd --sort=-%cpu | head -n 4
 Top1Pid=$(ps -eo pid --sort=-%cpu --no-headers | head -n 1)
 	;;
 
@@ -36,13 +34,15 @@ echo -e "\n\n-------Top 3 procesos que consumen SWAP"
 echo -e "PID - CMD - SWAP"
 for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ print ""}' $file; done | sort -k 2 -r | egrep -i "kB|MB|GB" | head -n 3  | awk '{print $2" - "$5" "$6" - "$1}'
 
-Top1Pid=$(for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ print ""}' $file; done | sort -k 2 -r | head -n 1  | awk '{print $2}')
+Top1Pid=$(for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ print ""}' $file; done | sort -k 2 -r | egrep -i "kB|MB|GB" | head -n 1  | awk '{print $2}')
+
+
 #echo $Top1Pid
 #nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
 #echo $nombreProceso
 #nombreProcesoLargo=$(ps -p $Top1Pid -o cmd --no-headers)
 #echo $nombreProcesoLargo
-	;;
+        ;;
 
 	FS)
 echo -e "\n\n-------Listado de FS en alerta"
@@ -81,24 +81,37 @@ esac
 
 if [[ $skipReport == 0 ]]
 then
-  
   #echo $Top1Pid
   nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
   #echo $nombreProceso
   nombreProcesoLargo=$(ps -p $Top1Pid -o cmd --no-headers)
   #echo $nombreProcesoLargo
   source ./escalation.txt
+  sistema=$(echo $HOSTNAME | cut -b 1,2,3,4,5)
 
   while read line; 
-  do 
-   # echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso
-
-    if [[ ! -z $(echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso) ]]
+  do
+  listProceso=$(echo $line | awk -F'|' '{print $2}' | egrep -w "$nombreProceso|ALL")
+  listSistema=$(echo $line | awk -F'|' '{print $1}' | egrep -w "$sistema|ALL")
+#    if [[ ! -z $(echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso) ]]
+    if [[ ! -z $listProceso ]]
     then
-      echo -e "\nLa alerta de $opcion detectada debe escalarse de la siguiente manera:\n"
-      eval echo $(echo $line | awk -F'|' '{print $3}')
-      echo -e "\n"
+      if [[ ! -z $listSistema && $listSistema == $sistema && $listProceso == $nombreProceso || ! -z $listSistema && $listSistema == "ALL" && $listProceso == $nombreProceso ]]
+      then
+        echo -e "\n\nLa alerta de $opcion detectada debe tratarse de la siguiente manera:\n"
+        eval echo $(echo $line | awk -F'|' '{print $3}')
+        echo "info a reportar:"
+        echo "Pid: $Top1Pid"
+        echo "Proceso: $nombreProcesoLargo"
+        echo "Capturar toda la información mostrada y adjuntarla en el correo informativo a enviar"
+        echo -e "\n"
+        msg=1
+      fi
     fi
   done < list.txt
 fi
 
+if [[ $msg == 0 ]]
+then
+  echo -e "\nAlerta no identificada. La alerta debe ser escalada a SSMM-MF. Es necesario tambien enviar un correo adjuntando la informacion mostrada anteriormente \n"
+fi
