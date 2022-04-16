@@ -3,7 +3,7 @@
 OSVersion=$(cat /etc/redhat-release | awk '{print $4}' | cut -c 1)
 
 
-THRESHOLD_PERCENT=75       # Umbral de alertas de FS
+THRESHOLD_PERCENT=5       # Umbral de alertas de FS
 
 skipReport=0			# Controla si debe printar el reporte de escalado de CPU/RAM/SWAP
 logrotateExec=0			# Controla si se ejecuto un logrotate
@@ -59,7 +59,14 @@ Top1Pid=$(for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $
 echo -e "\n\n-------Listado de FS en alerta"
 skipReport=1
 #set -e
-df --output=pcent,target | while read line
+if [[ $OSVersion == 7 ]]
+then
+  dfCommand=$(df --output=pcent,target)
+else
+  df -P | awk '{print $5"  "$6}'| head -n 1
+  dfCommand=$(df -P | awk '{print $5"        "$6}' | grep -v Capacity)
+fi
+  echo "$dfCommand" | while read line
 do
   list_logrotate_installed=$(cat /etc/logrotate.d/* | egrep -v "{|}|  |HUP |null|>|<|#" | sed '/^[[:space:]]*$/d')
   if [[ "$line" != Use* ]] && [[ ! -z "$line" ]]  && [[ "$line" != '' ]]
