@@ -48,11 +48,11 @@ for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ pr
 Top1Pid=$(for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ print ""}' $file; done | egrep -i "kB|MB|GB" | awk '{print $2" - "$5" "$6" - "$1}' | sort -n -k 3 -r | head -n 1 | awk '{print $1}')
 
 
-echo $Top1Pid
-nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
-echo $nombreProceso
-nombreProcesoLargo=$(ps -p $Top1Pid -o cmd --no-headers)
-echo $nombreProcesoLargo
+#echo $Top1Pid
+#nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
+#echo $nombreProceso
+#nombreProcesoLargo=$(ps -p $Top1Pid -o cmd --no-headers)
+#echo $nombreProcesoLargo
         ;;
 
 	FS)
