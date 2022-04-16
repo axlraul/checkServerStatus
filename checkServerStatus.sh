@@ -14,10 +14,12 @@ echo "RAM"
 echo "SWAP"
 echo "FS"
 
+echo -e "\n"
+
 read opcion
 case $opcion in
-	CPU)
 
+	CPU)
 echo -e "\n-------Top 3 procesos que consumen CPU"
 ps -eo %cpu,ppid,cmd --sort=-%cpu | head -n 4
 Top1Pid=$(ps -eo pid --sort=-%cpu --no-headers | head -n 1)
@@ -35,7 +37,6 @@ echo -e "PID - CMD - SWAP"
 for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ print ""}' $file; done | sort -k 2 -r | egrep -i "kB|MB|GB" | head -n 3  | awk '{print $2" - "$5" "$6" - "$1}'
 
 Top1Pid=$(for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $3 }END{ print ""}' $file; done | sort -k 2 -r | head -n 1  | awk '{print $2}')
-
 #echo $Top1Pid
 #nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
 #echo $nombreProceso
@@ -81,26 +82,23 @@ esac
 if [[ $skipReport == 0 ]]
 then
   
-echo $Top1Pid
-nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
-echo $nombreProceso
-nombreProcesoLargo=$(ps -p $Top1Pid -o cmd --no-headers)
-echo $nombreProcesoLargo
-source ./escalation.txt
-echo "$Aplicativo"
+  #echo $Top1Pid
+  nombreProceso=$(ps -p $Top1Pid -o comm --no-headers)
+  #echo $nombreProceso
+  nombreProcesoLargo=$(ps -p $Top1Pid -o cmd --no-headers)
+  #echo $nombreProcesoLargo
+  source ./escalation.txt
+
   while read line; 
   do 
-    echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso
+   # echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso
 
     if [[ ! -z $(echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso) ]]
     then
-      echo "el proceso debe escalarse de la siguiente manera"
-#      eval $(echo $line | awk -F'|' '{print $3}')
-
-echo "DEBE HABER PRINTADO APP"
+      echo -e "\nLa alerta de $opcion detectada debe escalarse de la siguiente manera:\n"
+      eval echo $(echo $line | awk -F'|' '{print $3}')
+      echo -e "\n"
     fi
-#   echo $line; 
   done < list.txt
 fi
-
 
