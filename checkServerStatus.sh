@@ -1,8 +1,9 @@
 #!/bin/bash   
 
-THRESHOLD_PERCENT=75           # Umbral de alertas de FS
+THRESHOLD_PERCENT=75       # Umbral de alertas de FS
 
 skipReport=0			# Controla si debe printar el reporte de escalado de CPU/RAM/SWAP
+logrotateExec=0			# Controla si se ejecuto un logrotate
 msg=0 				# Variable que controla si se ha printado mensaje por pantalla con instrucciones
 clear
 
@@ -46,7 +47,7 @@ Top1Pid=$(for file in /proc/*/status ; do awk '/VmSwap|Name|Pid/{printf $2 " " $
 
 	FS)
 echo -e "\n\n-------Listado de FS en alerta"
-
+skipReport=1
 #set -e
 df --output=pcent,target | while read line
 do
@@ -65,19 +66,16 @@ do
         echo -e "Liberando espacio - logrotate $get_logrotate_name. Revisar en 5 minutos si la alerta se ha resuelto \n"
         logrotate -f $get_logrotate_name
       else
-        echo -e "No se ha podido liberar espacio automaticamente\n"
+        echo -e "No se ha podido liberar espacio automaticamente en $file\n"
       fi
     fi
   fi
-skipReport=1
 done
 	;;
 	*)
 	echo -e "Opcion no correcta, vuelve a intentarlo\n\n"
-        skipReport=1
 	;;
 esac
-
 
 if [[ $skipReport == 0 ]]
 then
@@ -91,9 +89,8 @@ then
 
   while read line; 
   do
-  listProceso=$(echo $line | awk -F'|' '{print $2}' | egrep -w "$nombreProceso|ALL")
-  listSistema=$(echo $line | awk -F'|' '{print $1}' | egrep -w "$sistema|ALL")
-#    if [[ ! -z $(echo $line | awk -F'|' '{print $2}' | grep -w $nombreProceso) ]]
+    listProceso=$(echo $line | awk -F'|' '{print $2}' | egrep -w "$nombreProceso|ALL")
+    listSistema=$(echo $line | awk -F'|' '{print $1}' | egrep -w "$sistema|ALL")
     if [[ ! -z $listProceso ]]
     then
       if [[ ! -z $listSistema && $listSistema == $sistema && $listProceso == $nombreProceso || ! -z $listSistema && $listSistema == "ALL" && $listProceso == $nombreProceso ]]
@@ -109,9 +106,8 @@ then
       fi
     fi
   done < list.txt
-fi
-
-if [[ $msg == 0 ]]
-then
-  echo -e "\nAlerta no identificada. La alerta debe ser escalada a SSMM-MF. Es necesario tambien enviar un correo adjuntando la informacion mostrada anteriormente \n"
+  if [[ $msg == 0 ]]
+  then
+    echo -e "\nAlerta no identificada. La alerta debe ser escalada a SSMM-MF. Es necesario tambien enviar un correo adjuntando la informacion mostrada anteriormente \n"
+  fi
 fi
