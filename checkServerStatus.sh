@@ -23,7 +23,7 @@ case $opcion in
 
 	CPU)
 echo -e "\n-------Top 3 procesos que consumen CPU"
-ps -eo %cpu,pid,ppid,cmd --sort=-%cpu | head -n 3
+ps -eo %cpu,pid,ppid,cmd --sort=-%cpu | head -n 4
 Top1Pid=$(ps -eo pid --sort=-%cpu --no-headers | head -n 1)
 	;;
 
@@ -36,7 +36,7 @@ else
 fi
 
 echo -e "\n\n-------Top 3 procesos que consumen RAM"
-ps -eo %mem,pid,ppid,cmd --sort=$MEMORIA --no-headers | head -n 3
+ps -eo %mem,pid,ppid,cmd --sort=$MEMORIA | head -n 4
 Top1Pid=$(ps -eo pid --sort=$MEMORIA --no-headers | head -n 1)
 	;;
 
