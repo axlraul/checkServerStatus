@@ -1,7 +1,4 @@
-ALL|Desconocido|$TS
-GSTMQ|JAVA|$Aplicativo
-EIDES|JAVA|$Aplicativo
-ALL|qradar|$AgenteBasico
+#### Procesos productos basicos ####
 ALL|kauditd|$AgenteBasico
 ALL|qualys-cloud-agent|$AgenteBasico
 ALL|qualys-scan-util|$AgenteBasico
@@ -9,9 +6,22 @@ ALL|k08agent|$AgenteBasico
 ALL|klzagent|$AgenteBasico
 ALL|k11agent|$AgenteBasico
 ALL|dsmc|$Backup
-ALL|systemd|$Aplicativo|##Prueba
-GSTMQ|httpd|$Aplicativo
 ALL|BESClient|$AgenteBasico
-ALL|gc-launcher|$TS  ##Guardicore
+ALL|gc-launcher|$TSSSMMMF  ##Guardicore
+
+#### Procesos responsabilidad de TS ####
+ALL|systemd|$TSSSMMMF|##Prueba
+
+#### GSTMQ ####
+GSTMQ|JAVA|$Aplicativo
+GSTMQ|java|$Aplicativo
+GSTMQ|httpd|$Aplicativo
 GSTMQ|amqrmppa|$Aplicativo
+
+#### EIDES ####
+EIDES|JAVA|$Aplicativo
+EIDES|java|$Aplicativo
 EIDES|mysqld|$Aplicativo
+
+#### LDAP1 ####
+ldap1|mysqld|$TSSSMMMF
