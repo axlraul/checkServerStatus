@@ -1,5 +1,8 @@
 #!/bin/bash   
 
+OSVersion=$(cat /etc/redhat-release | awk '{print $4}' | cut -c 1)
+
+
 THRESHOLD_PERCENT=75       # Umbral de alertas de FS
 
 skipReport=0			# Controla si debe printar el reporte de escalado de CPU/RAM/SWAP
@@ -25,9 +28,17 @@ Top1Pid=$(ps -eo pid --sort=-%cpu --no-headers | head -n 1)
 	;;
 
 	RAM)
+if [[ $OSVersion == 7 ]]
+then
+  MEMORIA=$(echo "-%mem")
+elif [[ $OSVersion == 6 ]]
+then
+  MEMORIA=$(echo "-rss")
+fi
+
 echo -e "\n\n-------Top 3 procesos que consumen RAM"
-ps -eo %mem,pid,ppid,cmd --sort=-%mem | head -n 4
-Top1Pid=$(ps -eo pid --sort=-%mem --no-headers | head -n 1)
+ps -eo %mem,pid,ppid,cmd --sort=$MEMORIA --no-headers | head -n 4
+Top1Pid=$(ps -eo pid --sort=$MEMORIA --no-headers | head -n 1)
 	;;
 
 	SWAP)
