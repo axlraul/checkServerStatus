@@ -1,6 +1,6 @@
 #!/bin/bash   
 
-THRESHOLD_PERCENT=10            # Umbral de alertas de FS
+THRESHOLD_PERCENT=75           # Umbral de alertas de FS
 
 skipReport=0			# Controla si debe printar el reporte de escalado de CPU/RAM/SWAP
 msg=0 				# Variable que controla si se ha printado mensaje por pantalla con instrucciones
